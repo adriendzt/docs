@@ -3,3 +3,9 @@ description: Documents for Systems Engineering
 theme: just-the-docs
 
 url: https://adriendzt.github.io/docs/
+
+
+mermaid:
+  # Version of mermaid library
+  # Pick an available version from https://cdn.jsdelivr.net/npm/mermaid/
+  version: "9.1.6"

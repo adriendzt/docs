@@ -5,9 +5,15 @@ nav_order: 4
 parent: "Linux"
 ---
 
-How to install a new server from scratch? OS, partitioning, middleware packages\
-Here is the case with a Debian OS installed on an HPE server where we want to install KVM and Docker bare metal.\
-The server is disconnected from internet and is brand new.
+This page describes how to install a new server from scratch: OS, partitioning, middleware packages.\
+The server is disconnected from internet and brand new.\
+It is the case of a Linux Debian installed on an HPE server where we install KVM and Docker bare metal.
+
+## Table of contents
+{: .no_toc .text-delta }
+
+1. TOC
+{:toc}
 
 
 ## Create a bootable USB drive with Debian
@@ -46,9 +52,9 @@ For HPE servers, do not use the iLO USB port for the keyboard.
 
 Start the server.
 
-On the stating sreen, press F9 when the access choices are displayed.\
+On the stating screen, press F9 when the access choices are displayed.\
 Select System Configuration\
-Select `Embadded RAID1` puis `Array Configuration`\
+Select `Embadded RAID1` then `Array Configuration`\
 Select `Manage Arrays` to check if a RAID is not already configured.\
 Select `Create Array`
 
@@ -61,10 +67,10 @@ Create a RAID 1 logical disk with disk 1 and 2 (for the system).
 -	Back to Main Menu
 
 Create a RAID 0 logical disk for the rest of the disks (applications).\
-Same steps and chosing the disk 3,4,5,6 and RAID0.
+Same steps and choosing the disk 3,4,5,6 and RAID0.
 
 The disk LED should to be turned on and indicate that the RAID is configured.\
-There is an additional icon on the RAID0 disks to avoid taking off the disk (the disk is not redondant).
+There is an additional icon on the RAID0 disks to avoid taking off the disk (the disk is not redundant).
 
 ## Server first start
 
@@ -85,7 +91,7 @@ superadmin root password: your_password\
 Create a first user with a name, lastname, password\
 Disk configuration: Guided - use an entire disk\
 Select the first disk (0.0.0) 480Go\
-Select all in one partitiion: we will get an automated split with 200Go of SWAP and the rest of the system. \
+Select all in one partition: we will get an automated split with 200Go of SWAP and the rest of the system. \
 Apply the changes for the disks: YES\
 The system installation is starting.\
 "Continue without network mirror?": YES\
@@ -119,8 +125,9 @@ We can verify the network interfaces with the command `ip a`:
 Example of a network interface.\
 We see 2 interfaces: eno5np0 and eno6np1.
 
-We can configure eno5np0 for instance, edit /etc/network/interfaces with nano:
+We can configure eno5np0 for instance, it corresponds to the first ethernet port on the right side at the back of the server on this HPE.
 
+Edit `/etc/network/interfaces` with nano:
 ```
 # This file describes the network interfaces available on your system
 # and how to activate them. For more information, see interfaces(5).
@@ -140,14 +147,14 @@ iface eno5np0 inet static
 
 ```
 Example of a network interface configuration. We are giving a fix ip 192.168.1.3 to the interface eno5np0.\
-We can plug the server to the network.\
+We can plug the server to the network. \
 Reboot the server and change again the network configuration with `ip a`.
 
 ### Install ssh server
 
 For now, the server has ssh client (able to connect to other servers), but not ssh server (for others to connect to it).
 
-Get the debian packages from an other reachable server and copy the files we need:
+Get the debian packages from another reachable server and copy the files we need:
 
 ```
 scp –r adrien@192.168.1.10:/home/adrien/libwrap* /home/adrien/

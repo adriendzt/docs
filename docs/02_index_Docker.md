@@ -36,7 +36,7 @@ docker run -h docker_name --cpus "2.0" --memory "2g" -p 2208:22/tcp -p --detach 
 ## Create a new image
 We can use a running docker to create a new image.\
 `docker commit docker_name image_name_2`\
-That why, we can instanciate new docker from this image:
+That why, we can instantiate new docker from this image:
 ```yaml
 docker run --publish 2237:22/tcp --detach --name docker_name_2 image_name_2
 ```
@@ -53,4 +53,4 @@ Save the image in a file: `docker save image_name > image_name.tar`\
 Send the file to another server with scp: `scp image_name.tar adrien@192.168.1.10:/home/adrien`\
 Load the image on the other server: `docker load < image_name.tar`\
 Verify that the image is on the other server: `docker image list`\
-We can instanciate the docker (don't forget to add the image version): `docker run --publish 2238:22 --detach --name docker_name image_name:0.4.0`
+We can instantiate the docker (don't forget to add the image version): `docker run --publish 2238:22 --detach --name docker_name image_name:0.4.0`

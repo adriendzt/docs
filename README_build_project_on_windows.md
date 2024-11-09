@@ -32,3 +32,5 @@ http://localhost:4000
 To rebuild automatically when there is a change:
 bundle exec jekyll serve --incremental
 
+
+If something is not built properly, remove the _site directory and build again

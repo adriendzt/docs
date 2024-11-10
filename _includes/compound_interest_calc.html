@@ -1,0 +1,53 @@
+<html>
+<body>
+
+
+  <label for="fname">Initial investment (k)</label><br>
+  <input type="text" id="init_invest" name="fname" value="50"><br>
+  <label for="lname">Annual rate of return (%)</label><br>
+  <input type="text" id="rate" name="lname" value="8"><br>
+  <label for="lname">Annual investment (k)</label><br>
+  <input type="text" id="annual_invest" name="lname" value="12"><br>
+  <label for="lname">Investment time (years)</label><br>
+  <input type="text" id="invest_time" name="lname" value="10"><br>
+  <br>
+
+  <button type="button" onclick="calc()">Calculate</button>
+
+  <p id="output">End wealth in k</p>
+
+  <details>
+    <summary>Details</summary>
+    <p id="output_table"></p>
+  </details>
+
+
+<script>
+function calc() {
+  var initInvest = Number(document.getElementById("init_invest").value);
+  var rate = Number(document.getElementById("rate").value);
+  var annualInvest = Number(document.getElementById("annual_invest").value);
+  var investTime = Number(document.getElementById("invest_time").value);
+  
+  var tableOutput = '<table><tr><th>Year</th><th>Wealth</th><th>Interest</th><th>Investment</th></tr>';
+  
+  var endWealth = initInvest;
+  for (let i = 0; i < investTime; i++) {
+    tableOutput += '<tr><td>' + i +'</td><td>' + ~~endWealth + '</td><td>' + ~~(endWealth * (rate / 100)) + '</td><td>'+ annualInvest +'</td></tr>';
+    endWealth = endWealth * (1 + rate / 100) + annualInvest;
+  }
+  
+  endWealth = ~~endWealth;
+  
+  tableOutput += '<tr><td>' + investTime +'</td><td>' + ~~endWealth + '</td><td></td><td></td></tr>';
+  tableOutput += '</table>';
+  
+  document.getElementById("output").innerHTML = "End wealth: " + endWealth + "k";
+  document.getElementById("output_table").innerHTML = tableOutput;
+}
+
+</script>
+
+
+</body>
+</html>

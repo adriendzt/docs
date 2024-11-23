@@ -1,5 +1,5 @@
 ---
-title: Multiprocess with bash
+title: Multiprocess
 layout: default
 nav_order: 2
 parent: "Bash"

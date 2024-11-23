@@ -1,5 +1,5 @@
 ---
-title: Basic webserver with bash
+title: Basic webserver
 layout: default
 nav_order: 1
 parent: "Bash"

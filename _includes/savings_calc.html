@@ -1,0 +1,260 @@
+<html>
+<head>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <style>
+    .tooltip {
+      position: absolute;
+      text-align: center;
+      padding: 8px;
+      font: 12px sans-serif;
+      background: lightgray;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      pointer-events: none;
+    }
+    /* Align inputs with consistent left margin */
+    label, input {
+      display: inline-block;
+      width: 150px;
+      margin: 5px 0;
+    }
+    input {
+      width: 200px;
+    }
+    #chart {
+      width: 50%; /* Align the chart to the left side */
+    }
+  </style>
+  
+</head>
+<body>
+  <label for="preset">Choose a preset:</label>
+  <select id="preset" onchange="applyPreset()">
+    <option value="default">Select a preset</option>
+    <option value="france">France - Systems Engineer (USD)</option>
+    <option value="zurich">Zurich - Senior Software Engineer (USD)</option>
+	<option value="san_jose">San Jose - Senior Software Engineer (USD)</option>
+    <option value="singapore">Singapore - Senior Software Engineer (USD)</option>
+
+  </select><br><br>
+
+  <label for="multiplier">Expenses Multiplier:</label>
+  <input type="number" id="multiplier" value="1" step="0.5" onchange="applyMultiplier()"><br><br>
+
+  <!-- Financial data inputs -->
+  <label for="net_income">Net Income:</label>
+  <input type="text" id="net_income" value="3000"><br>
+
+  <label for="rent">Rent:</label>
+  <input type="text" id="rent" value="800"><br>
+
+  <label for="food">Food:</label>
+  <input type="text" id="food" value="300"><br>
+
+  <label for="entertainment">Entertainment:</label>
+  <input type="text" id="entertainment" value="150"><br>
+
+  <label for="travel">Travel:</label>
+  <input type="text" id="travel" value="200"><br>
+
+  <label for="car">Car:</label>
+  <input type="text" id="car" value="100"><br>
+
+  <label for="misc">Miscellaneous:</label>
+  <input type="text" id="misc" value="50"><br>
+
+  <label for="health">Health:</label>
+  <input type="text" id="health" value="100"><br>
+
+  <label for="sport">Sport:</label>
+  <input type="text" id="sport" value="50"><br>
+
+  <label for="plans">Plans:</label>
+  <input type="text" id="plans" value="50"><br>
+
+  <label for="transport">Transport:</label>
+  <input type="text" id="transport" value="100"><br>
+
+  <label for="taxes">Taxes:</label>
+  <input type="text" id="taxes" value="200"><br><br>
+
+  <button type="button" onclick="calculateSavings()">OK</button>
+  <p id="output">Savings: </p>
+
+  <div id="chart"></div>
+  
+    <script>
+const presets = {
+  zurich: { net_income: 119880, rent: 39102.91, food: 6329.05, entertainment: 7554.38, travel: 6498.27, car: 52.89, misc: 4400.18, health: 8574.75, sport: 2775.0, plans: 1537.41, transport: 767.79, taxes: 3767.34 },
+  singapore: { net_income: 159606, rent: 44851.04, food: 3848.06, entertainment: 3716.76, travel: 8000.0, car: 0.0, misc: 3696.15, health: 882.0, sport: 2331.0, plans: 1291.42, transport: 644.94, taxes: 3767.34 },
+  san_jose: { net_income: 161598, rent: 46141.44, food: 5063.24, entertainment: 5635.57, travel: 8000.0, car: 3000.0, misc: 3295.74, health: 7911.0, sport: 2078.48, plans: 1151.52, transport: 575.07, taxes: 2821.74 },
+  france: {
+    net_income: (35193.72 * 1.05).toFixed(2),
+    rent: (12263.42 * 1.05).toFixed(2),
+    travel: (3325.51 * 1.05).toFixed(2),
+    car: (2531.72 * 1.05).toFixed(2),
+    food: (2487.14 * 1.05).toFixed(2),
+    entertainment: (1839.99 * 1.05).toFixed(2),
+    misc: (2237.73 * 1.05).toFixed(2),
+    health: (582.99 * 1.05).toFixed(2),
+    plans: (431 * 1.05).toFixed(2),
+    sport: (0 * 1.05).toFixed(2),
+    transport: (77 * 1.05).toFixed(2),
+    taxes: (1094 * 1.05).toFixed(2)
+  }
+};
+
+let currentPreset = {};
+let currentMultiplier = 1;
+
+function applyPreset() {
+  const preset = document.getElementById("preset").value;
+  if (preset in presets) {
+    currentPreset = { ...presets[preset] };
+    applyMultiplier();
+  }
+}
+
+function applyMultiplier() {
+  const multiplier = parseFloat(document.getElementById("multiplier").value);
+  currentMultiplier = multiplier;
+
+  if (Object.keys(currentPreset).length > 0) {
+    for (const key in currentPreset) {
+      if (key !== "rent" && key !== "car" && key !== "taxes" && key !== "net_income") {
+        currentPreset[key] = parseFloat((presets[document.getElementById("preset").value][key] * multiplier).toFixed(2));
+      }
+    }
+    updateFields();
+  }
+}
+
+function updateFields() {
+  document.getElementById("net_income").value = currentPreset.net_income;
+  document.getElementById("rent").value = currentPreset.rent;
+  document.getElementById("food").value = currentPreset.food;
+  document.getElementById("entertainment").value = currentPreset.entertainment;
+  document.getElementById("travel").value = currentPreset.travel;
+  document.getElementById("car").value = currentPreset.car;
+  document.getElementById("misc").value = currentPreset.misc;
+  document.getElementById("health").value = currentPreset.health;
+  document.getElementById("sport").value = currentPreset.sport;
+  document.getElementById("plans").value = currentPreset.plans;
+  document.getElementById("transport").value = currentPreset.transport;
+  document.getElementById("taxes").value = currentPreset.taxes;
+}
+
+function calculateSavings() {
+  const netIncome = Number(document.getElementById("net_income").value);
+  const expenses = [
+    Number(document.getElementById("rent").value),
+    Number(document.getElementById("food").value),
+    Number(document.getElementById("entertainment").value),
+    Number(document.getElementById("travel").value),
+    Number(document.getElementById("car").value),
+    Number(document.getElementById("misc").value),
+    Number(document.getElementById("health").value),
+    Number(document.getElementById("sport").value),
+    Number(document.getElementById("plans").value),
+    Number(document.getElementById("transport").value),
+    Number(document.getElementById("taxes").value)
+  ];
+  const totalExpenses = expenses.reduce((acc, value) => acc + value, 0);
+  const savings = netIncome - totalExpenses;
+
+  document.getElementById("output").innerHTML = "Savings: " + savings.toFixed(2);
+
+  const data = [
+    { label: "Savings", value: savings },
+    { label: "Rent", value: expenses[0] },
+    { label: "Food", value: expenses[1] },
+    { label: "Entertainment", value: expenses[2] },
+    { label: "Travel", value: expenses[3] },
+    { label: "Car", value: expenses[4] },
+    { label: "Misc", value: expenses[5] },
+    { label: "Health", value: expenses[6] },
+    { label: "Sport", value: expenses[7] },
+    { label: "Plans", value: expenses[8] },
+    { label: "Transport", value: expenses[9] },
+    { label: "Taxes", value: expenses[10] }
+  ];
+
+  drawPieChart(data);
+}
+
+function drawPieChart(data) {
+  const width = 450;
+  const height = 450;
+  const radius = Math.min(width - 2, height - 2) / 2;
+
+  const color = d3.scaleOrdinal(d3.schemeSet2);
+
+  d3.select("#chart").selectAll("svg").remove();
+
+  const svg = d3
+    .select("#chart")
+    .append("svg")
+    .attr("width", width)
+    .attr("height", height)
+    .append("g")
+    .attr("transform", `translate(${width / 2}, ${height / 2})`);
+
+  const pie = d3.pie().value((d) => d.value).sort((a, b) => (a.label === "Savings" ? -1 : 1));
+
+  const arc = d3.arc().innerRadius(0).outerRadius(radius);
+
+  const tooltip = d3
+    .select("body")
+    .append("div")
+    .attr("class", "tooltip")
+    .style("opacity", 0);
+
+  const paths = svg
+    .selectAll("path")
+    .data(pie(data))
+    .enter()
+    .append("path")
+    .attr("d", arc)
+    .attr("fill", (d, i) => (d.data.label === "Savings" ? "green" : color(i)))
+    .attr("stroke", "black")
+    .style("stroke-width", "2px")
+    .style("opacity", 0.7)
+    .on("mouseover", (event, d) => {
+      tooltip
+        .style("opacity", 1)
+        .html(
+          `${d.data.label}: $${d.data.value.toFixed(2)} (${((d.data.value / d3.sum(data.map((d) => d.value))) * 100).toFixed(2)}%)`
+        )
+        .style("left", `${event.pageX + 10}px`)
+        .style("top", `${event.pageY - 20}px`);
+    })
+    .on("mousemove", (event) => {
+      tooltip
+        .style("left", `${event.pageX + 10}px`)
+        .style("top", `${event.pageY - 20}px`);
+    })
+    .on("mouseout", () => {
+      tooltip.style("opacity", 0);
+    });
+
+  paths
+    .each(function (d) {
+      const centroid = arc.centroid(d);
+      const percent = ((d.data.value / d3.sum(data.map((d) => d.value))) * 100).toFixed(2);
+
+      if (centroid[0] > 0 && centroid[0] < width / 2) {
+        svg
+          .append("text")
+          .attr("transform", `translate(${centroid})`)
+          .attr("dy", ".35em")
+          .attr("text-anchor", "middle")
+          .style("font-size", "12px")
+          .style("fill", "white")
+          .text(`${percent}%`);
+      }
+    });
+}
+</script>
+
+</body>
+</html>

@@ -2,85 +2,117 @@
 <head>
   <script src="https://d3js.org/d3.v7.min.js"></script>
   <style>
+    /* Compact the layout */
+    body {
+      font-family: sans-serif;
+      margin: 10px;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: left;
+    }
+
+    /* Align labels and inputs in a grid-like layout */
+    form {
+      display: grid;
+      grid-template-columns: auto auto;
+      gap: 5px 10px; /* Reduce spacing between elements */
+      width: 100%;
+      max-width: 400px; /* Adjust to fit smaller screens */
+    }
+
+    label {
+      text-align: left;
+      margin: 0;
+      padding: 0;
+      font-size: 12px;
+    }
+
+    input, select {
+      font-size: 12px;
+      padding: 3px 5px;
+      margin: 0;
+      width: 100%; /* Allow inputs to adjust based on container size */
+      box-sizing: border-box;
+    }
+
+    button {
+      grid-column: span 2;
+      margin: 10px auto;
+      padding: 5px 10px;
+    }
+
+    #chart {
+      width: 50%; /* Make the chart responsive */
+      max-width: 450px;
+    }
+
     .tooltip {
       position: absolute;
       text-align: center;
-      padding: 8px;
-      font: 12px sans-serif;
+      padding: 5px;
+      font: 10px sans-serif;
       background: lightgray;
       border: 1px solid #ccc;
       border-radius: 4px;
       pointer-events: none;
     }
-    /* Align inputs with consistent left margin */
-    label, input {
-      display: inline-block;
-      width: 150px;
-      margin: 5px 0;
-    }
-    input {
-      width: 200px;
-    }
-    #chart {
-      width: 50%; /* Align the chart to the left side */
-    }
   </style>
   
 </head>
 <body>
-  <label for="preset">Choose a preset:</label>
-  <select id="preset" onchange="applyPreset()">
-    <option value="default">Select a preset</option>
-    <option value="france">France - Systems Engineer (USD)</option>
-    <option value="zurich">Zurich - Senior Software Engineer (USD)</option>
-	<option value="san_jose">San Jose - Senior Software Engineer (USD)</option>
-    <option value="singapore">Singapore - Senior Software Engineer (USD)</option>
+  <form>
+    <label for="preset">Choose a preset:</label>
+    <select id="preset" onchange="applyPreset()">
+      <option value="default">Select a preset</option>
+      <option value="france">France - Systems Engineer (USD)</option>
+      <option value="zurich">Zurich - Senior Software Engineer (USD)</option>
+      <option value="san_jose">San Jose - Senior Software Engineer (USD)</option>
+      <option value="singapore">Singapore - Senior Software Engineer (USD)</option>
+    </select>
 
-  </select><br><br>
+    <label for="multiplier">Expenses Multiplier:</label>
+    <input type="number" id="multiplier" value="1" step="0.5" onchange="applyMultiplier()">
 
-  <label for="multiplier">Expenses Multiplier:</label>
-  <input type="number" id="multiplier" value="1" step="0.5" onchange="applyMultiplier()"><br><br>
+    <label for="net_income">Net Income:</label>
+    <input type="text" id="net_income" value="3000">
 
-  <!-- Financial data inputs -->
-  <label for="net_income">Net Income:</label>
-  <input type="text" id="net_income" value="3000"><br>
+    <label for="rent">Rent:</label>
+    <input type="text" id="rent" value="800">
 
-  <label for="rent">Rent:</label>
-  <input type="text" id="rent" value="800"><br>
+    <label for="food">Food:</label>
+    <input type="text" id="food" value="300">
 
-  <label for="food">Food:</label>
-  <input type="text" id="food" value="300"><br>
+    <label for="entertainment">Entertainment:</label>
+    <input type="text" id="entertainment" value="150">
 
-  <label for="entertainment">Entertainment:</label>
-  <input type="text" id="entertainment" value="150"><br>
+    <label for="travel">Travel:</label>
+    <input type="text" id="travel" value="200">
 
-  <label for="travel">Travel:</label>
-  <input type="text" id="travel" value="200"><br>
+    <label for="car">Car:</label>
+    <input type="text" id="car" value="100">
 
-  <label for="car">Car:</label>
-  <input type="text" id="car" value="100"><br>
+    <label for="misc">Miscellaneous:</label>
+    <input type="text" id="misc" value="50">
 
-  <label for="misc">Miscellaneous:</label>
-  <input type="text" id="misc" value="50"><br>
+    <label for="health">Health:</label>
+    <input type="text" id="health" value="100">
 
-  <label for="health">Health:</label>
-  <input type="text" id="health" value="100"><br>
+    <label for="sport">Sport:</label>
+    <input type="text" id="sport" value="50">
 
-  <label for="sport">Sport:</label>
-  <input type="text" id="sport" value="50"><br>
+    <label for="plans">Plans:</label>
+    <input type="text" id="plans" value="50">
 
-  <label for="plans">Plans:</label>
-  <input type="text" id="plans" value="50"><br>
+    <label for="transport">Transport:</label>
+    <input type="text" id="transport" value="100">
 
-  <label for="transport">Transport:</label>
-  <input type="text" id="transport" value="100"><br>
+    <label for="taxes">Taxes:</label>
+    <input type="text" id="taxes" value="200">
 
-  <label for="taxes">Taxes:</label>
-  <input type="text" id="taxes" value="200"><br><br>
-
-  <button type="button" onclick="calculateSavings()">OK</button>
+    <button type="button" onclick="calculateSavings()">OK</button>
+  </form>
   <p id="output">Savings: </p>
-
   <div id="chart"></div>
   
     <script>

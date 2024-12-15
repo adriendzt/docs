@@ -183,9 +183,12 @@ function calculateSavings() {
 }
 
 function drawPieChart(data) {
-  const width = 450;
-  const height = 450;
-  const radius = Math.min(width - 2, height - 2) / 2;
+  const container = document.getElementById("chart");
+  const containerWidth = container.offsetWidth;
+
+  const width = Math.min(containerWidth, 450);
+  const height = width;
+  const radius = width / 2 - 10;
 
   const color = d3.scaleOrdinal(d3.schemeSet2);
 

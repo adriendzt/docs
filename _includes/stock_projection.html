@@ -1,0 +1,287 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stock Price Projection</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 1200px;
+            margin: auto;
+        }
+        canvas {
+            width: 100%;
+            height: auto;
+        }
+        .controls {
+            margin-bottom: 20px;
+        }
+        .percentage {
+            font-size: 18px;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="controls">
+        <p>Load your CSV file to project future prices. Select the model and adjust the prediction days dynamically.</p>
+        <input type="file" id="fileInput" accept=".csv"><br>
+		<label for="modelSelector">Projection Model:</label>
+        <select id="modelSelector">
+            <option value="linear">Linear Regression</option>
+            <option value="polynomial">Polynomial Regression</option>
+        </select><br>
+		<label for="predictionDays">Number of prediction days</label>
+        <input type="number" id="predictionDays" value="365" min="1"><br>
+		<label for="regressionDays">Days for Regression</label>
+        <input type="number" id="regressionDays" value="365" min="1"><br>
+    </div>
+    <div class="chart-container">
+        <canvas id="stockChart"></canvas>
+    </div>
+
+    <div class="percentage" id="percentageChange"></div>
+
+    <script>
+        let historicalDates = [];
+        let historicalPrices = [];
+        let chart;
+
+        /* Parse CSV file content */
+        function parseCSV(csvContent) {
+            const rows = csvContent.trim().split("\n").slice(1); /* Skip the header row */
+            const dates = [];
+            const prices = [];
+
+            rows.forEach(row => {
+                const [timestamp, price] = row.split(",");
+                dates.push(timestamp);
+                prices.push(parseFloat(price));
+            });
+
+            return { dates, prices };
+        }
+
+        /* Linear Regression (Manual Implementation) */
+        function linearRegression(x, y) {
+            const n = x.length;
+            const sumX = x.reduce((acc, val) => acc + val, 0);
+            const sumY = y.reduce((acc, val) => acc + val, 0);
+            const sumXY = x.reduce((acc, val, i) => acc + val * y[i], 0);
+            const sumX2 = x.reduce((acc, val) => acc + val * val, 0);
+
+            const m = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX);
+            const b = (sumY - m * sumX) / n;
+
+            return { m, b };
+        }
+
+        /* Polynomial Regression (Degree 2) (Manual Implementation) */
+        function polynomialRegression(x, y, degree) {
+            const X = x.map((xi) => [1, xi, xi * xi]); /* Creating a matrix for polynomial of degree 2 (x^2) */
+            const Xt = transpose(X); /* Transpose X */
+            const XtX = multiplyMatrices(Xt, X); /* Xt * X */
+            const XtY = multiplyMatrices(Xt, y.map(val => [val])); /* Convert y into a column matrix */
+
+            const coefficients = solveSystem(XtX, XtY);
+            return coefficients;
+        }
+
+        function transpose(matrix) {
+            return matrix[0].map((_, colIndex) => matrix.map(row => row[colIndex]));
+        }
+
+        function multiplyMatrices(A, B) {
+            return A.map(row =>
+                B[0].map((_, colIndex) => row.reduce((sum, value, rowIndex) => sum + value * B[rowIndex][colIndex], 0))
+            );
+        }
+
+        function solveSystem(A, B) {
+            const n = A.length;
+            const augmented = A.map((row, i) => row.concat(B[i]));
+
+            for (let i = 0; i < n; i++) {
+                let maxRow = i;
+                for (let j = i + 1; j < n; j++) {
+                    if (Math.abs(augmented[j][i]) > Math.abs(augmented[maxRow][i])) {
+                        maxRow = j;
+                    }
+                }
+
+                [augmented[i], augmented[maxRow]] = [augmented[maxRow], augmented[i]];
+
+                for (let j = i + 1; j < n; j++) {
+                    const factor = augmented[j][i] / augmented[i][i];
+                    for (let k = i; k <= n; k++) {
+                        augmented[j][k] -= factor * augmented[i][k];
+                    }
+                }
+            }
+
+            const solution = new Array(n).fill(0);
+            for (let i = n - 1; i >= 0; i--) {
+                solution[i] = augmented[i][n] / augmented[i][i];
+                for (let j = i - 1; j >= 0; j--) {
+                    augmented[j][n] -= augmented[j][i] * solution[i];
+                }
+            }
+
+            return solution;
+        }
+
+        /* Calculate projection based on the selected model */
+        function calculateProjection(futureDays, model, regressionDays) {
+            const totalDays = historicalDates.length;
+            const daysForRegression = Math.min(regressionDays, totalDays);
+            const startIndex = totalDays - daysForRegression;
+
+            const regressionDates = historicalDates.slice(startIndex);
+            const regressionPrices = historicalPrices.slice(startIndex);
+            const days = regressionDates.map((_, index) => index);
+            let projectedPrices;
+
+            if (model === "linear") {
+                const { m, b } = linearRegression(days, regressionPrices);
+                projectedPrices = Array.from({ length: futureDays }, (_, i) => {
+                    const day = days.length + i;
+                    return m * day + b;
+                });
+            } else if (model === "polynomial") {
+                const degree = 2; /* Quadratic regression */
+                const coefficients = polynomialRegression(days, regressionPrices, degree);
+                const polynomial = (x) =>
+                    coefficients.reduce((sum, coeff, power) => sum + coeff * Math.pow(x, power), 0);
+                projectedPrices = Array.from({ length: futureDays }, (_, i) => {
+                    const day = days.length + i;
+                    return polynomial(day);
+                });
+            }
+
+            const allDates = historicalDates.concat(
+                Array.from({ length: futureDays }, (_, i) => {
+                    const futureDate = new Date(historicalDates[historicalDates.length - 1]);
+                    futureDate.setDate(futureDate.getDate() + (i + 1)); /* Increment by 1 day */
+                    return futureDate.toISOString().split("T")[0];
+                })
+            );
+
+            return { allDates, projectedPrices, regressionDates, regressionPrices };
+        }
+
+        /* Render the chart */
+        function renderChart(allDates, projectedPrices, regressionDates, regressionPrices) {
+            const ctx = document.getElementById("stockChart").getContext("2d");
+            if (chart) {
+                chart.destroy(); /* Destroy the existing chart if it exists */
+            }
+            chart = new Chart(ctx, {
+                type: "line",
+                data: {
+                    labels: allDates,
+                    datasets: [
+                        {
+                            label: "Regression Data",
+                            data: new Array(historicalPrices.length - regressionPrices.length).fill(null).concat(regressionPrices),
+                            borderColor: "#2196F3",
+                            backgroundColor: "rgba(33, 150, 243, 0.1)",
+                            pointRadius: 2,
+                        },
+                        {
+                            label: "Historical Prices",
+                            data: historicalPrices,
+                            borderColor: "#4CAF50",
+                            backgroundColor: "rgba(76, 175, 80, 0.1)",
+                            pointRadius: 2,
+                        },
+                        {
+                            label: "Projected Prices",
+                            data: new Array(historicalPrices.length).fill(null).concat(projectedPrices),
+                            borderColor: "#FF5722",
+                            backgroundColor: "rgba(255, 87, 34, 0.1)",
+                            pointRadius: 2,
+                            borderDash: [5, 5],
+                        },
+                    ],
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: {
+                            display: true,
+                        },
+                    },
+                    scales: {
+                        x: {
+                            ticks: {
+                                autoSkip: true,
+                                maxTicksLimit: 10,
+                            },
+                        },
+                        y: {
+                            beginAtZero: false,
+                        },
+                    },
+                },
+            });
+        }
+
+        /* Handle file input and initial load */
+        function handleFileInput(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+
+            reader.onload = function (e) {
+                const csvContent = e.target.result;
+                const { dates, prices } = parseCSV(csvContent);
+
+                historicalDates = dates;
+                historicalPrices = prices;
+
+                updateProjection();
+            };
+
+            reader.readAsText(file);
+        }
+
+        /* Update projection */
+        function updateProjection() {
+            const futureDays = parseInt(document.getElementById("predictionDays").value, 10);
+            const model = document.getElementById("modelSelector").value;
+            const regressionDays = parseInt(document.getElementById("regressionDays").value, 10);
+
+            const { allDates, projectedPrices, regressionDates, regressionPrices } = calculateProjection(
+                futureDays,
+                model,
+                regressionDays
+            );
+
+            renderChart(allDates, projectedPrices, regressionDates, regressionPrices);
+
+            const percentageChange = ((
+                projectedPrices[projectedPrices.length - 1] - historicalPrices[historicalPrices.length - 1]
+            ) /
+                historicalPrices[historicalPrices.length - 1]) * 100;
+
+            document.getElementById("percentageChange").innerText = `Projected percentage change: ${percentageChange.toFixed(
+                2
+            )}%`;
+        }
+
+        document.getElementById("fileInput").addEventListener("change", handleFileInput);
+        document.getElementById("modelSelector").addEventListener("change", updateProjection);
+        document.getElementById("predictionDays").addEventListener("input", updateProjection);
+        document.getElementById("regressionDays").addEventListener("input", updateProjection);
+    </script>
+</body>
+</html>

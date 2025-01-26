@@ -32,17 +32,32 @@
 <body>
     <div class="controls">
         <p>Load your CSV file to project future prices. Select the model and adjust the prediction days dynamically.</p>
-        <input type="file" id="fileInput" accept=".csv"><br>
-		<label for="modelSelector">Projection Model:</label>
+        <label for="localFileSelector">Select a sample file:</label>
+        <select id="localFileSelector">
+			<option value="">-- Select a file --</option>
+			<option value="../../assets/marketdata/market_data_amzn.csv">Amazon</option>
+			<option value="../../assets/marketdata/market_data_nvda.csv">Nvidia</option>
+			<option value="../../assets/marketdata/market_data_meta.csv">Meta</option>
+			<option value="../../assets/marketdata/market_data_msft.csv">Microsoft</option>
+			<option value="../../assets/marketdata/market_data_smci.csv">Supermicro</option>
+			<option value="../../assets/marketdata/market_data_spy.csv">S&P 500</option>
+			<option value="../../assets/marketdata/market_data_spy_20y.csv">S&P 500 - 20 Years</option>
+		</select><br>
+        <label for="localFileSelector">Or choose your file:</label>
+        <input type="file" id="fileInput" accept=".csv"><br><br>
+        <label for="modelSelector">Projection Model:</label>
         <select id="modelSelector">
             <option value="linear">Linear Regression</option>
             <option value="polynomial">Polynomial Regression</option>
         </select><br>
-		<label for="predictionDays">Number of prediction days</label>
+
+        <label for="predictionDays">Number of prediction days:</label>
         <input type="number" id="predictionDays" value="365" min="1"><br>
-		<label for="regressionDays">Days for Regression</label>
+
+        <label for="regressionDays">Days for Regression:</label>
         <input type="number" id="regressionDays" value="365" min="1"><br>
     </div>
+
     <div class="chart-container">
         <canvas id="stockChart"></canvas>
     </div>
@@ -68,7 +83,7 @@
 
             return { dates, prices };
         }
-
+		
         /* Linear Regression (Manual Implementation) */
         function linearRegression(x, y) {
             const n = x.length;
@@ -176,65 +191,26 @@
             return { allDates, projectedPrices, regressionDates, regressionPrices };
         }
 
-        /* Render the chart */
-        function renderChart(allDates, projectedPrices, regressionDates, regressionPrices) {
-            const ctx = document.getElementById("stockChart").getContext("2d");
-            if (chart) {
-                chart.destroy(); /* Destroy the existing chart if it exists */
+        /* Fetch and load a file from the local directory */
+        async function loadLocalFile(fileName) {
+            try {
+                const response = await fetch(fileName);
+                if (!response.ok) {
+                    throw new Error(`Failed to load ${fileName}`);
+                }
+                const csvContent = await response.text();
+                const { dates, prices } = parseCSV(csvContent);
+
+                historicalDates = dates;
+                historicalPrices = prices;
+
+                updateProjection();
+            } catch (error) {
+                console.error(error.message);
             }
-            chart = new Chart(ctx, {
-                type: "line",
-                data: {
-                    labels: allDates,
-                    datasets: [
-                        {
-                            label: "Regression Data",
-                            data: new Array(historicalPrices.length - regressionPrices.length).fill(null).concat(regressionPrices),
-                            borderColor: "#2196F3",
-                            backgroundColor: "rgba(33, 150, 243, 0.1)",
-                            pointRadius: 2,
-                        },
-                        {
-                            label: "Historical Prices",
-                            data: historicalPrices,
-                            borderColor: "#4CAF50",
-                            backgroundColor: "rgba(76, 175, 80, 0.1)",
-                            pointRadius: 2,
-                        },
-                        {
-                            label: "Projected Prices",
-                            data: new Array(historicalPrices.length).fill(null).concat(projectedPrices),
-                            borderColor: "#FF5722",
-                            backgroundColor: "rgba(255, 87, 34, 0.1)",
-                            pointRadius: 2,
-                            borderDash: [5, 5],
-                        },
-                    ],
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: true,
-                    plugins: {
-                        legend: {
-                            display: true,
-                        },
-                    },
-                    scales: {
-                        x: {
-                            ticks: {
-                                autoSkip: true,
-                                maxTicksLimit: 10,
-                            },
-                        },
-                        y: {
-                            beginAtZero: false,
-                        },
-                    },
-                },
-            });
         }
 
-        /* Handle file input and initial load */
+        /* Handle file input and load content */
         function handleFileInput(event) {
             const file = event.target.files[0];
             if (!file) return;
@@ -278,7 +254,73 @@
             )}%`;
         }
 
+        /* Render the chart */
+        function renderChart(allDates, projectedPrices, regressionDates, regressionPrices) {
+            const ctx = document.getElementById("stockChart").getContext("2d");
+            if (chart) {
+                chart.destroy(); /* Destroy the existing chart if it exists */
+            }
+            chart = new Chart(ctx, {
+                type: "line",
+                data: {
+                    labels: allDates,
+                    datasets: [
+                        {
+                            label: "Regression Data",
+                            data: new Array(historicalPrices.length - regressionPrices.length).fill(null).concat(regressionPrices),
+                            borderColor: "#2196F3",
+                            backgroundColor: "rgba(33, 150, 243, 0.1)",
+                            pointRadius: 2,
+                        },
+                        {
+                            label: "Historical Prices",
+                            data: historicalPrices,
+                            borderColor: "#4CAF50",
+                            backgroundColor: "rgba(76, 175, 80, 0.1)",
+                            pointRadius: 2,
+                        },
+                        {
+                            label: "Projected Prices",
+                            data: new Array(historicalPrices.length).fill(null).concat(projectedPrices),
+                            borderColor: "#FF5722",
+                            backgroundColor: "rgba(255, 87, 34, 0.1)",
+                            pointRadius: 2,
+                            borderDash: [5, 5],
+                        },
+                    ],
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: {
+                            display: true,
+                        },
+                    },
+                    animation: false, /* Disable animations */
+                    scales: {
+                        x: {
+                            ticks: {
+                                autoSkip: true,
+                                maxTicksLimit: 10,
+                            },
+                        },
+                        y: {
+                            beginAtZero: false,
+                        },
+                    },
+                },
+            });
+        }
+
+        /* Event listeners */
         document.getElementById("fileInput").addEventListener("change", handleFileInput);
+        document.getElementById("localFileSelector").addEventListener("change", (event) => {
+            const fileName = event.target.value;
+            if (fileName) {
+                loadLocalFile(fileName);
+            }
+        });
         document.getElementById("modelSelector").addEventListener("change", updateProjection);
         document.getElementById("predictionDays").addEventListener("input", updateProjection);
         document.getElementById("regressionDays").addEventListener("input", updateProjection);

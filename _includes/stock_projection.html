@@ -14,6 +14,13 @@
             width: 100%;
             max-width: 1200px;
             margin: auto;
+            height: 400px; /* Default height */
+        }
+
+        @media (max-width: 768px) {
+            .chart-container {
+                height: 300px; /* Adjusted for smaller screens */
+            }
         }
         canvas {
             width: 100%;
@@ -35,13 +42,13 @@
         <label for="localFileSelector">Select a sample file:</label>
         <select id="localFileSelector">
 			<option value="">-- Select a file --</option>
-			<option value="../../assets/marketdata/market_data_amzn.csv">Amazon</option>
-			<option value="../../assets/marketdata/market_data_nvda.csv">Nvidia</option>
-			<option value="../../assets/marketdata/market_data_meta.csv">Meta</option>
-			<option value="../../assets/marketdata/market_data_msft.csv">Microsoft</option>
-			<option value="../../assets/marketdata/market_data_smci.csv">Supermicro</option>
-			<option value="../../assets/marketdata/market_data_spy.csv">S&P 500</option>
-			<option value="../../assets/marketdata/market_data_spy_20y.csv">S&P 500 - 20 Years</option>
+			<option value="/assets/marketdata/market_data_amzn.csv">Amazon</option>
+			<option value="/assets/marketdata/market_data_nvda.csv">Nvidia</option>
+			<option value="/assets/marketdata/market_data_meta.csv">Meta</option>
+			<option value="/assets/marketdata/market_data_msft.csv">Microsoft</option>
+			<option value="/assets/marketdata/market_data_smci.csv">Supermicro</option>
+			<option value="/assets/marketdata/market_data_spy.csv">S&P 500</option>
+			<option value="/assets/marketdata/market_data_spy_20y.csv">S&P 500 - 20 Years</option>
 		</select><br>
         <label for="localFileSelector">Or choose your file:</label>
         <input type="file" id="fileInput" accept=".csv"><br><br>
@@ -291,7 +298,7 @@
                 },
                 options: {
                     responsive: true,
-                    maintainAspectRatio: true,
+                    maintainAspectRatio: false, /* Allow the chart to adapt its height */
                     plugins: {
                         legend: {
                             display: true,

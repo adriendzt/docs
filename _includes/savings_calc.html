@@ -65,10 +65,10 @@
     <label for="preset">Choose a preset:</label>
     <select id="preset" onchange="applyPreset()">
       <option value="default">Select a preset</option>
-      <option value="france">France - Systems Engineer (USD)</option>
-      <option value="zurich">Zurich - Senior Software Engineer (USD)</option>
-      <option value="san_jose">San Jose - Senior Software Engineer (USD)</option>
-      <option value="singapore">Singapore - Senior Software Engineer (USD)</option>
+      <option value="preset1">Preset 1</option>
+      <option value="preset2">Preset 2</option>
+      <option value="preset3">Preset 3</option>
+      <option value="preset4">Preset 4</option>
     </select>
 
     <label for="multiplier">Expenses Multiplier:</label>
@@ -117,10 +117,10 @@
   
     <script>
 const presets = {
-  zurich: { net_income: 119880, rent: 39102.91, food: 6329.05, entertainment: 7554.38, travel: 6498.27, car: 52.89, misc: 4400.18, health: 8574.75, sport: 2775.0, plans: 1537.41, transport: 767.79, taxes: 3767.34 },
-  singapore: { net_income: 159606, rent: 44851.04, food: 3848.06, entertainment: 3716.76, travel: 8000.0, car: 0.0, misc: 3696.15, health: 882.0, sport: 2331.0, plans: 1291.42, transport: 644.94, taxes: 3767.34 },
-  san_jose: { net_income: 161598, rent: 46141.44, food: 5063.24, entertainment: 5635.57, travel: 8000.0, car: 3000.0, misc: 3295.74, health: 7911.0, sport: 2078.48, plans: 1151.52, transport: 575.07, taxes: 2821.74 },
-  france: {
+  preset2: { net_income: 119880, rent: 39102.91, food: 6329.05, entertainment: 7554.38, travel: 6498.27, car: 52.89, misc: 4400.18, health: 8574.75, sport: 2775.0, plans: 1537.41, transport: 767.79, taxes: 3767.34 },
+  preset4: { net_income: 159606, rent: 44851.04, food: 3848.06, entertainment: 3716.76, travel: 8000.0, car: 0.0, misc: 3696.15, health: 882.0, sport: 2331.0, plans: 1291.42, transport: 644.94, taxes: 3767.34 },
+  preset3: { net_income: 161598, rent: 46141.44, food: 5063.24, entertainment: 5635.57, travel: 8000.0, car: 3000.0, misc: 3295.74, health: 7911.0, sport: 2078.48, plans: 1151.52, transport: 575.07, taxes: 2821.74 },
+  preset1: {
     net_income: (35193.72 * 1.05).toFixed(2),
     rent: (12263.42 * 1.05).toFixed(2),
     travel: (3325.51 * 1.05).toFixed(2),
